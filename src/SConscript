@@ -149,6 +149,48 @@ elif env['PLATFORM'] == "posix":
     env.Program ('hammer', 'hammer.c')
     env.Program ('nail', 'nail.c')
     env.Program ('queuebench', 'queuebench.c')
+
+elif env['PLATFORM'] == "darwin":
+    env.Append (
+        LIBS     =  [
+                        'mama',
+                        'zmq',
+                        'event',
+                        'wombatcommon',
+                        'pthread',
+                    ],
+        LIBPATH  =  [
+                        '$WITH_MAMA/lib',
+                        '$WITH_LIBEVENT/lib',
+                        '$WITH_ZMQ/lib',
+                        '.',
+                    ],
+        CFLAGS   =  [
+                        '-g',
+                        '-O3'
+                    ],
+    )
+    if not env.GetOption('clean') and not env.GetOption('help'):
+        conf = Configure (env)
+        if not conf.CheckCHeader ('bridge.h'):
+            print 'Cannot find MAMA Source code - check --with-mamasource'
+            Exit(1)
+
+        if not conf.CheckCHeader ('uuid/uuid.h'):
+            print 'Cannot find uuid - ensure uuid devel is installed'
+            Exit(1)
+
+        if not conf.CheckCHeader ('event.h'):
+            print 'Cannot find event.h - ensure libevent devel is installed'
+            Exit(1)
+
+        if not conf.CheckLib ('mama'):
+            print 'Cannot find MAMA install directory - check --with-mamainstall'
+            Exit(1)
+        conf.Finish()
+    env.Program ('hammer', 'hammer.c')
+    env.Program ('nail', 'nail.c')
+    env.Program ('queuebench', 'queuebench.c')
 else:
     print "Unsupported platform: %s" % env['PLATFORM']
     exit (1)
